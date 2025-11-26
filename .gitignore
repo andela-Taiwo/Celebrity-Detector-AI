@@ -1,0 +1,9 @@
+celebrity_detector.egg-info/
+.venv/
+.env
+__pycache__/
+.pytest_cache/
+.DS_Store
+.idea/
+.vscode/
+.pytest_cache/

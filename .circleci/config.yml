@@ -16,40 +16,55 @@ jobs:
     executor: docker-executor
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: "20.10.7"
       - run:
-          name: Authenticate with google cloud
+          name: "Install Docker client"
           command: |
-              echo "$GCLOUD_SERVICE_KEY" | base64 --decode > gcp-key.json
-              gcloud auth activate-service-account --key-file=gcp-key.json
-              gcloud auth configure-docker us-central1-docker.pkg.dev || gcloud auth configure-docker
+            apt-get update && apt-get install -y docker.io
+            docker --version
+      - run:
+          name: "Authenticate with Google Cloud"
+          command: |
+            echo "$GCLOUD_SERVICE_KEY" | base64 --decode > gcp-key.json
+            gcloud auth activate-service-account --key-file=gcp-key.json
+            gcloud auth configure-docker us-central1-docker.pkg.dev
+      - run:
+          name: "Build Docker Image"
+          command: |
+            docker build -t us-central1-docker.pkg.dev/$GOOGLE_PROJECT_ID/celebrity-llmops-repo/celebrity-app:latest .
+      - run:
+          name: "Push Docker Image"
+          command: |
+            docker push us-central1-docker.pkg.dev/$GOOGLE_PROJECT_ID/celebrity-llmops-repo/celebrity-app:latest
 
-      - run:
-          name: Build and Push Image
-          command: |
-              docker build -t us-central1-docker.pkg.dev/grounded-gizmo-478618-r9/celebrity-llmops-repo/celebrity-app:latest
-              docker push us-central1-docker.pkg.dev/grounded-gizmo-478618-r9/celebrity-llmops-repo/celebrity-app:latest
   deploy_to_gke:
     executor: docker-executor
     steps:
       - checkout
-      - setup_remote_docker
       - run:
-          name: Authenticate with google cloud
+          name: "Authenticate with Google Cloud"
           command: |
-              echo "$GCLOUD_SERVICE_KEY" | base64 --decode > gcp-key.json
-              gcloud auth activate-service-account --key-file=gcp-key.json
-              gcloud auth configure-docker us-central1-docker.pkg.dev || gcloud auth configure-docker
-      
+            echo "$GCLOUD_SERVICE_KEY" | base64 --decode > gcp-key.json
+            gcloud auth activate-service-account --key-file=gcp-key.json
       - run:
-          name: Configure GKE
+          name: "Install kubectl"
           command: |
-              gcloud container clusters get-credentials $GKE_CLUSTER --region $GOOGLE_COMPUTE_REGION --project $GOOGLE_PROJECT_ID
+            gcloud components install kubectl -q
       - run:
-          name: Deploy to GKE
+          name: "Configure GKE"
           command: |
-              kubectl apply -f kubernetes-deployment.yaml --validate=false
-              kubectl rollout restart deployment celebrity-app
+            gcloud container clusters get-credentials $GKE_CLUSTER --region $GOOGLE_COMPUTE_REGION --project $GOOGLE_PROJECT_ID
+      - run:
+          name: "Deploy to GKE"
+          command: |
+            kubectl apply -f kubernetes-deployment.yaml --validate=false
+            kubectl rollout restart deployment/celebrity-app
+      - run:
+          name: "Verify deployment"
+          command: |
+            kubectl get deployments
+            kubectl get pods -l app=celebrity-app
 
 workflows:
   version: 2

@@ -31,25 +31,29 @@ jobs:
       - run:
           name: "Build Docker Image"
           command: |
-            docker build -t us-central1-docker.pkg.dev/$GOOGLE_PROJECT_ID/celebrity-llmops-repo/celebrity-app:latest .
+            docker build -t us-central1-docker.pkg.dev/$GOOGLE_PROJECT_ID/$GKE_CLUSTER_REPO/celebrity-app:latest .
       - run:
           name: "Push Docker Image"
           command: |
-            docker push us-central1-docker.pkg.dev/$GOOGLE_PROJECT_ID/celebrity-llmops-repo/celebrity-app:latest
+            docker push us-central1-docker.pkg.dev/$GOOGLE_PROJECT_ID/$GKE_CLUSTER_REPO/celebrity-app:latest
 
   deploy_to_gke:
     executor: docker-executor
     steps:
       - checkout
       - run:
+          name: "Update package list"
+          command: |
+            apt-get update
+      - run:
+          name: "Install kubectl"
+          command: |
+            apt-get install -y kubectl
+      - run:
           name: "Authenticate with Google Cloud"
           command: |
             echo "$GCLOUD_SERVICE_KEY" | base64 --decode > gcp-key.json
             gcloud auth activate-service-account --key-file=gcp-key.json
-      - run:
-          name: "Install kubectl"
-          command: |
-            gcloud components install kubectl -q
       - run:
           name: "Configure GKE"
           command: |

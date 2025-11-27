@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: celebrity-app
-        image: us-central1-docker.pkg.dev/gen-lang-client-0729539659/llmops-repo/celebrity-app:latest
+        image: us-central1-docker.pkg.dev/zinc-primer-478517-n8/celebrity-llmops-repo/celebrity-app:latest
         ports:
         - containerPort: 5000
         env:

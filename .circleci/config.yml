@@ -31,11 +31,11 @@ jobs:
       - run:
           name: "Build Docker Image"
           command: |
-            docker build -t us-central1-docker.pkg.dev/$GOOGLE_PROJECT_ID/$GKE_CLUSTER_REPO/celebrity-app:latest .
+            docker build -t us-central1-docker.pkg.dev/zinc-primer-478517-n8/$GKE_CLUSTER_REPO/celebrity-app:latest .
       - run:
           name: "Push Docker Image"
           command: |
-            docker push us-central1-docker.pkg.dev/$GOOGLE_PROJECT_ID/$GKE_CLUSTER_REPO/celebrity-app:latest
+            docker push us-central1-docker.pkg.dev/zinc-primer-478517-n8/celebrity-llmops-repo/celebrity-app:latest
 
   deploy_to_gke:
     executor: docker-executor
@@ -57,7 +57,7 @@ jobs:
       - run:
           name: "Configure GKE"
           command: |
-            gcloud container clusters get-credentials $GKE_CLUSTER --region $GOOGLE_COMPUTE_REGION --project $GOOGLE_PROJECT_ID
+            gcloud container clusters get-credentials $GKE_CLUSTER --region $GOOGLE_COMPUTE_REGION --project zinc-primer-478517-n8
       - run:
           name: "Deploy to GKE"
           command: |

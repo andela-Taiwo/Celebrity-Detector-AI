@@ -17,6 +17,10 @@ spec:
         image: us-central1-docker.pkg.dev/zinc-primer-478517-n8/celebrity-llmops-repo/celebrity-app:latest
         ports:
         - containerPort: 5000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
         env:
         - name: GROQ_API_KEY
           valueFrom:

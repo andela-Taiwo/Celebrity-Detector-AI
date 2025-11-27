@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celebrity-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celebrity-app
+  template:
+    metadata:
+      labels:
+        app: celebrity-app
+    spec:
+      containers:
+      - name: celebrity-app
+        image: us-central1-docker.pkg.dev/gen-lang-client-0729539659/llmops-repo/celebrity-app:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: GROQ_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: llmops-secrets
+              key: GROQ_API_KEY
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: llmops-service
+spec:
+  selector:
+    app: celebrity-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  type: LoadBalancer
